@@ -22,68 +22,57 @@ import com.example.notificationbaisc.navigation.*
 import androidx.core.net.toUri
 import android.app.TaskStackBuilder
 import com.example.notificationbaisc.uix.MainActivity
-import android.app.RemoteInput
-import android.app.Person
+import androidx.core.app.RemoteInput
+import androidx.core.app.Person
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat.MessagingStyle
+
+
 const val RESULT_KEY = "RESULT_KEY"
 @Module
 @InstallIn(SingletonComponent::class)
 object NotificationModule {
+
     @Singleton
     @Provides
     fun provideNotificationBuilder(
-            @ApplicationContext context: Context
-        ): NotificationCompat.Builder {
-
-
-
-
-
-
-
-
-
-
-        val intent=Intent(context, MyReceiver::class.java).apply{
-            putExtra("MESSAGE","Clicked")
-        }
-        val flag=
-            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
-                PendingIntent.FLAG_IMMUTABLE
-        }else
-            0
-
-        val pendingIntent= PendingIntent.getBroadcast(
-            context,0,intent,flag
-        )
-
-        val clickIntent = Intent(
-            Intent.ACTION_VIEW,
-            "$MY_URI/$MY_ARG=Coming from Notification".toUri(),
+        @ApplicationContext context: Context
+    ): NotificationCompat.Builder {
+        val flag =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_MUTABLE
+            } else
+                0
+        val remoteInput = RemoteInput.Builder(RESULT_KEY)
+            .setLabel("Type here...")
+            .build()
+        val replyIntent = Intent(context, MyReceiver::class.java)
+        val replyPendingIntent = PendingIntent.getBroadcast(
             context,
-            MainActivity::class.java
+            1,
+            replyIntent,
+            flag
         )
-        val clickPendingIntent: PendingIntent = TaskStackBuilder.create(context).run {
-            addNextIntentWithParentStack(clickIntent)
-            getPendingIntent(1, flag)
-        }
+        val replyAction = NotificationCompat.Action.Builder(
+            0,
+            "Reply",
+            replyPendingIntent
+        ).addRemoteInput(remoteInput).build()
 
+        val person = Person.Builder().setName("Johny").build()
+        val notificationStyle = MessagingStyle(person)
+            .addMessage("Hi there!", System.currentTimeMillis(), person)
         return NotificationCompat.Builder(context, "Main Channel ID")
             .setSmallIcon(R.drawable.ic_baseline_notifications_24)
-            .setContentTitle("Welcome")
-            .setContentText("Study Channel: For every bookworm")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVisibility(VISIBILITY_PRIVATE)
-            .setPublicVersion(
-                NotificationCompat.Builder(context, "Main Channel ID")
-                    .setSmallIcon(R.drawable.ic_baseline_notifications_24)
-                    .setContentTitle("Hidden")
-                    .setContentText("Unlock to see the message.")
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                    .build()
-            )
-            .addAction(0,"ACTION",pendingIntent)
-            .setContentIntent(clickPendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setOnlyAlertOnce(true)
+            .setStyle(notificationStyle)
+            .addAction(replyAction)
     }
+
+
+
+
 
     @Singleton
     @Provides

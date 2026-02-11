@@ -1,10 +1,12 @@
 package com.example.notificationbaisc.receiver
 
 
+import android.Manifest
 import android.app.RemoteInput
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
@@ -20,6 +22,8 @@ class MyReceiver : BroadcastReceiver() {
     @Inject
     lateinit var notificationBuilder: NotificationCompat.Builder
 
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onReceive(context: Context?, intent: Intent?) {
         val remoteInput = RemoteInput.getResultsFromIntent(intent)
         if (remoteInput != null) {
@@ -32,9 +36,8 @@ class MyReceiver : BroadcastReceiver() {
             notificationManager.notify(
                 1,
                 notificationBuilder
-//                    .setStyle(notificationStyle)
-                    .setContentTitle("Sent!")
-                    .setStyle(null)
+                   .setStyle(notificationStyle)
+
                     .build()
             )
         }
