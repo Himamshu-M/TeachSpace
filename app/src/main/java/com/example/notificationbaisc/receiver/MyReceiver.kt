@@ -15,28 +15,14 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MyReceiver : BroadcastReceiver() {
 
-    @Inject
-    lateinit var notificationManager: NotificationManagerCompat
-    @Inject
-    lateinit var notificationBuilder: NotificationCompat.Builder
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        val remoteInput = RemoteInput.getResultsFromIntent(intent)
-        if (remoteInput != null) {
-            val input = remoteInput.getCharSequence(RESULT_KEY).toString()
-            val person = Person.Builder().setName("Me").build()
-            val message = NotificationCompat.MessagingStyle.Message(
-                input, System.currentTimeMillis(), person
-            )
-            val notificationStyle = NotificationCompat.MessagingStyle(person).addMessage(message)
-            notificationManager.notify(
-                1,
-                notificationBuilder
-//                    .setStyle(notificationStyle)
-                    .setContentTitle("Sent!")
-                    .setStyle(null)
-                    .build()
-            )
+   override fun onReceive(context: Context?, intent: Intent?) {
+        val message = intent?.getStringExtra("MESSAGE")
+        if (message != null) {
+            Toast.makeText(
+                context,
+                message,
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 }
